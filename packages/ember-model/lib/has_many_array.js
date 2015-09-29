@@ -63,7 +63,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
   },
 
   replaceContent: function(index, removed, added) {
-    added = Ember.EnumerableUtils.map(added, function(record) {
+    added = added.map(function(record) {
       return record._reference;
     }, this);
 

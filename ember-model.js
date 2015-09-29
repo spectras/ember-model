@@ -340,7 +340,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
   },
 
   replaceContent: function(index, removed, added) {
-    added = Ember.EnumerableUtils.map(added, function(record) {
+    added = added.map(function(record) {
       return record._reference;
     }, this);
 
@@ -891,7 +891,7 @@ Ember.Model = Ember.Object.extend(Ember.Evented, {
       } else {
         mapFunction = function(id) { return type._getOrCreateReferenceForId(id); };
       }
-      content = Ember.EnumerableUtils.map(content, mapFunction);
+      content = content.map(mapFunction);
     }
 
     return Ember.A(content || []);
