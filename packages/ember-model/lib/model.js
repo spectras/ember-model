@@ -450,10 +450,12 @@ Ember.Model.reopenClass({
   },
 
   _findFetchQuery: function(params, isFetch, container) {
-    var records = Ember.RecordArray.create({modelClass: this, _query: params, container: container});
-
-    var promise = this.adapter.findQuery(this, records, params);
-
+    var records = Ember.RecordArray.create({
+            loader: Ember.RecordArray.loaders.query.create({params: params}),
+            modelClass: this,
+            container: container
+        }),
+        promise = this.adapter.findQuery(this, records, params);
     return isFetch ? promise : records;
   },
 
@@ -468,7 +470,11 @@ Ember.Model.reopenClass({
   _findFetchMany: function(ids, isFetch, container) {
     Ember.assert("findFetchMany requires an array", Ember.isArray(ids));
 
-    var records = Ember.RecordArray.create({_ids: ids, modelClass: this, container: container}),
+    var records = Ember.RecordArray.create({
+            loader: Ember.RecordArray.loaders.list.create({ids: ids}),
+            modelClass: this,
+            container: container
+        }),
         deferred;
 
     if (!this.recordArrays) { this.recordArrays = []; }
@@ -519,9 +525,12 @@ Ember.Model.reopenClass({
       }
     }
 
-    var records = this._findAllRecordArray = Ember.RecordArray.create({modelClass: this, container: container});
-
-    var promise = this._currentFindFetchAllPromise = this.adapter.findAll(this, records);
+    var records = this._findAllRecordArray = Ember.RecordArray.create({
+            loader: Ember.RecordArray.loaders.all.create(),
+            modelClass: this,
+            container: container
+        }),
+        promise = this._currentFindFetchAllPromise = this.adapter.findAll(this, records);
 
     promise['finally'](function() {
       self._currentFindFetchAllPromise = null;
@@ -627,7 +636,11 @@ Ember.Model.reopenClass({
     if (requestIds.length === 1) {
       promise = get(this, 'adapter').find(this.cachedRecordForId(requestIds[0], container), requestIds[0]);
     } else {
-      var recordArray = Ember.RecordArray.create({_ids: batchIds, container: container});
+      var recordArray = Ember.RecordArray.create({
+          loader: Ember.RecordArray.loaders.list.create({ids: batchIds}),
+          modelClass: this,
+          container: container
+        });
       if (requestIds.length === 0) {
         promise = new Ember.RSVP.Promise(function(resolve, reject) { resolve(recordArray); });
         recordArray.notifyLoaded();
@@ -638,7 +651,7 @@ Ember.Model.reopenClass({
 
     promise.then(function() {
       for (var i = 0, l = batchRecordArrays.length; i < l; i++) {
-        batchRecordArrays[i].loadForFindMany(self);
+        batchRecordArrays[i].load();
       }
 
       if (batchDeferreds) {

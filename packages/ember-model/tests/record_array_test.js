@@ -35,7 +35,7 @@ test("load creates records with container when container exists", function() {
 test("when called with findMany, should contain an array of the IDs contained in the RecordArray", function() {
   var records = Ember.run(Model, Model.find, [1,2,3]);
 
-  deepEqual(records.get('_ids'), [1,2,3]);
+  deepEqual(records.get('loader.ids'), [1,2,3]);
   equal(records.get('length'), 0);
   ok(!records.get('isLoaded'));
   stop();
