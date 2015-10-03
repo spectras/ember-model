@@ -50,6 +50,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
       var isDirtyRecord = record.get('isDirty'), isNewRecord = record.get('isNew');
       if (isDirtyRecord || isNewRecord) { this._modifiedRecords.pushObject(content[idx]); }
       Ember.addObserver(content[idx], 'record.isDirty', this, 'recordStateChanged');
+      Ember.addObserver(content[idx], 'record.isNew', this, 'recordStateChanged');
       record.registerParentHasManyArray(this);
     }
 
@@ -97,6 +98,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
         this._modifiedRecords.removeObject(currentItem);
         currentItem.record.unregisterParentHasManyArray(this);
         Ember.removeObserver(currentItem, 'record.isDirty', this, 'recordStateChanged');
+        Ember.removeObserver(currentItem, 'record.isNew', this, 'recordStateChanged');
       }
     }
   },
@@ -112,6 +114,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
         var isDirtyRecord = currentItem.record.get('isDirty'), isNewRecord = currentItem.record.get('isNew'); // why newly created object is not dirty?
         if (isDirtyRecord || isNewRecord) { this._modifiedRecords.pushObject(currentItem); }
         Ember.addObserver(currentItem, 'record.isDirty', this, 'recordStateChanged');
+        Ember.addObserver(currentItem, 'record.isNew', this, 'recordStateChanged');
         currentItem.record.registerParentHasManyArray(this);
       }
     }
@@ -153,7 +156,7 @@ Ember.ManyArray = Ember.RecordArray.extend({
   recordStateChanged: function(obj, keyName) {
     var parent = get(this, 'parent'), relationshipKey = get(this, 'relationshipKey');    
 
-    if (obj.record.get('isDirty')) {
+    if (get(obj, 'record.isDirty') || get(obj, 'record.isNew')) {
       if (this._modifiedRecords.indexOf(obj) === -1) { this._modifiedRecords.pushObject(obj); }
       parent._relationshipBecameDirty(relationshipKey);
     } else {
