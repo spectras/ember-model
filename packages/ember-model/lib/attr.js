@@ -81,7 +81,7 @@ Ember.attr = function(type, options) {
           data = {};
           set(this, '_data', data);
         }
-        dataValue = data[dataKey] = value;
+        dataValue = data[dataKey] = serialize(value, type);
       }
 
       if (dataValue !== serialize(value, type)) {
