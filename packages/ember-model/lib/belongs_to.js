@@ -78,9 +78,8 @@ Ember.belongsTo = function(type, options) {
       }
 
       if (value) {
-        Ember.assert(Ember.String.fmt('Attempted to set property of type: %@ with a value of type: %@',
-                    [value.constructor, type]),
-                    value instanceof type);
+        Ember.assert('Attempted to set property of type: ' + value.constructor.toString() +
+                     ' with a value of type: ' + type.toString(), value instanceof type);
       }
 
       if (oldValue !== value) {
