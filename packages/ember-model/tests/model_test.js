@@ -632,17 +632,14 @@ test("toJSON works with string names", function() {
   });
 
   var Comment = Ember.Model.extend({
-        container: App.__container__,
         id: Ember.attr(),
         text: Ember.attr()
       }),
       Author = Ember.Model.extend({
-        container: App.__container__,
         id: Ember.attr(),
         name: Ember.attr()
       }),
       Article = Ember.Model.extend({
-        container: App.__container__,
         id: 1,
         title: Ember.attr(),
         comments: Ember.hasMany('comment', { key: 'comments' }),

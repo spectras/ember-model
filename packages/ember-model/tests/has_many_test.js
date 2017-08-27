@@ -101,7 +101,7 @@ test("model can be specified with a string to a resolved path", function() {
     comments: Ember.hasMany('comment', { key: 'comments', embedded: true })
   });
 
-  var article = App.Article.create({container: App.__container__});
+  var article = App.Article.create(App.__container__.ownerInjection());
   var subcomments = {
     subcomments: Ember.A([
       {id: 'c'},

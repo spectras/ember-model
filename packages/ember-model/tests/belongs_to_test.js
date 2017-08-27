@@ -64,7 +64,7 @@ test("model can be specified with a string to a resolved path", function() {
       article: Ember.belongsTo('article', { key: 'article', embedded: true })
     });
 
-  var comment = App.Comment.create({container: App.__container__});
+  var comment = App.Comment.create(App.__container__.ownerInjection());
   Ember.run(comment, comment.load, 1, { article: { id: 'a' } });
   var article = Ember.run(comment, comment.get, 'article');
 
@@ -716,9 +716,9 @@ test("non embedded belongsTo should return a record with a container", function(
   App.Article.adapter = Ember.FixtureAdapter.create();
   App.Article.FIXTURES = [{ id: 'first-article' }];
 
-  var comment = App.Comment.create({container: App.__container__});
+  var comment = App.Comment.create(App.__container__.ownerInjection());
   Ember.run(comment, comment.load, 1, { article_slug: 'first-article'  });
   var article = Ember.run(comment, comment.get, 'article');
-  ok(article.get('container'));
+  ok(Ember.getOwner(article));
   Ember.run(App, 'destroy');
 });

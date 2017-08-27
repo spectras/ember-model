@@ -1,4 +1,5 @@
-var get = Ember.get;
+var get = Ember.get,
+    getOwner = Ember.getOwner;
 
 function getType(record) {
   var type = this.type;
@@ -7,7 +8,7 @@ function getType(record) {
     this.type = get(Ember.lookup, this.type);
 
     if (!this.type) {
-      var store = record.container.lookup('store:main');
+      var store = getOwner(record).lookup('store:main');
       this.type = store.modelFor(type);
       this.type.reopenClass({ adapter: store.adapterFor(type) });
     }
@@ -27,11 +28,11 @@ Ember.hasMany = function(type, options) {
       Ember.assert("Type cannot be empty", !Ember.isEmpty(type));
 
       var key = options.key || propertyKey;
-      return this.getHasMany(key, type, meta, this.container);
+      return this.getHasMany(key, type, meta, getOwner(this));
     },
     set: function(propertyKey, newContentArray, existingArray) {
       if (!existingArray) {
-        existingArray = this.getHasMany(options.key || propertyKey, type, meta, this.container);
+        existingArray = this.getHasMany(options.key || propertyKey, type, meta, getOwner(this));
       }
       return existingArray.setObjects(newContentArray);
     }
@@ -39,19 +40,18 @@ Ember.hasMany = function(type, options) {
 };
 
 Ember.Model.reopen({
-  getHasMany: function(key, type, meta, container) {
+  getHasMany: function(key, type, meta, owner) {
     var embedded = meta.options.embedded,
         collectionClass = embedded ? Ember.EmbeddedHasManyArray : Ember.HasManyArray;
 
-    var collection = collectionClass.create({
+    var collection = collectionClass.create(owner.ownerInjection(), {
       parent: this,
       modelClass: type,
       content: this._getHasManyContent(key, type, embedded),
       embedded: embedded,
       ordered: !!meta.options.ordered,
       key: key,
-      relationshipKey: meta.relationshipKey,
-      container: container
+      relationshipKey: meta.relationshipKey
     });
 
     this._registerHasManyArray(collection);

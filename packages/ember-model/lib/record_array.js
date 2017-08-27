@@ -1,11 +1,12 @@
 var get = Ember.get,
-    set = Ember.set;
+    set = Ember.set,
+    getOwner = Ember.getOwner;
 
 var Loader = Ember.Object.extend({
   load: function (array, data) {
     var modelClass = get(array, 'modelClass');
     set(array, 'content', data.map(function (item) {
-      return modelClass.findFromCacheOrLoad(item, array.container);
+      return modelClass.findFromCacheOrLoad(item, getOwner(array));
     }));
   },
   reload: function (array) {
@@ -57,7 +58,7 @@ Ember.RecordArray.reopenClass({
         var modelClass = get(array, 'modelClass');
         if (data) { return this._super(array, data); }
         set(array, 'content', get(this, 'ids').map(function (id) {
-          return modelClass.cachedRecordForId(id, array.container);
+          return modelClass.cachedRecordForId(id, getOwner(array));
         }));
       }
     })

@@ -24,11 +24,11 @@ module("Ember.RecordArray", {
 });
 
 test("load creates records with container when container exists", function() {
-  var records = Ember.RecordArray.create({modelClass: Model, container: container});
+  var records = Ember.RecordArray.create(container.ownerInjection(), {modelClass: Model});
   Ember.run(records, records.load, Model, Model.FIXTURES);
   records.forEach(function(record){
     ok(record.get('isLoaded'));
-    ok(record.get('container'));
+    ok(Ember.getOwner(record));
   });
 });
 

@@ -2,10 +2,10 @@ var get = Ember.get,
     set = Ember.set;
 
 function storeFor(record) {
-  if (record.container) {
-    return record.container.lookup('store:main');
+  var owner = Ember.getOwner(record);
+  if (owner) {
+    return owner.lookup('store:main');
   }
-
   return null;
 }
 
@@ -109,6 +109,7 @@ Ember.belongsTo = function(type, options) {
 Ember.Model.reopen({
   getBelongsTo: function(key, type, meta, store) {
     var idOrAttrs = get(this, '_data.' + key),
+        owner = Ember.getOwner(this),
         record;
 
     if (Ember.isNone(idOrAttrs)) {
@@ -118,7 +119,7 @@ Ember.Model.reopen({
     if (meta.options.embedded) {
       var primaryKey = get(type, 'primaryKey'),
         id = idOrAttrs[primaryKey];
-      record = type.create({ isLoaded: false, id: id, container: this.container });
+      record = type.create(owner.ownerInjection(), { isLoaded: false, id: id });
       record.load(id, idOrAttrs);
     } else {
       if (store) {

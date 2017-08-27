@@ -5,7 +5,7 @@ module("Ember.Model.Store", {
     registry = new Ember.Registry();
     container = registry.container();
 
-    store = Ember.Model.Store.create({container: container});
+    store = Ember.Model.Store.create(container.ownerInjection());
     TestModel = Ember.Model.extend({
       token: Ember.attr(),
       name: Ember.attr(),
@@ -20,7 +20,7 @@ module("Ember.Model.Store", {
       })
     });
     TestModel.primaryKey = 'token';
-    TestModel.adapter = Ember.FixtureAdapter.create({});
+    TestModel.adapter = Ember.FixtureAdapter.create(container.ownerInjection());
     TestModel.FIXTURES = [
       {
         token: 'a',
@@ -47,7 +47,7 @@ module("Ember.Model.Store", {
       name: Ember.attr(),
       type: 'test'
     });
-    EmbeddedModel.adapter = Ember.FixtureAdapter.create({});
+    EmbeddedModel.adapter = Ember.FixtureAdapter.create(container.ownerInjection());
 
     var uuid = 1234;
 
@@ -59,7 +59,7 @@ module("Ember.Model.Store", {
       token: Ember.attr(),
       name: Ember.attr()
     });
-    EmbeddedModel.adapter = Ember.FixtureAdapter.create({});
+    EmbeddedModel.adapter = Ember.FixtureAdapter.create(container.ownerInjection());
 
     registry.register('model:test', TestModel);
     registry.register('model:embedded', EmbeddedModel);
@@ -70,8 +70,8 @@ module("Ember.Model.Store", {
 
 test("store.createRecord(type) returns a record with a container", function() {
   var record = Ember.run(store, store.createRecord, 'test');
-  equal(record.container, container);
-  equal(record.container, container);
+  equal(Ember.getOwner(record), container);
+  equal(Ember.getOwner(record), container);
 });
 
 test("store.createRecord(type) with properties", function() {
@@ -86,7 +86,7 @@ test("model.load(hashes) returns a existing record with correct container", func
       record = Ember.run(store, store.createRecord, 'uuid');
 
   equal(model, UUIDModel);
-  equal(record.container, container);
+  equal(Ember.getOwner(record), container);
 
   ok(record.set('token', 'c'));
 
@@ -98,14 +98,14 @@ test("model.load(hashes) returns a existing record with correct container", func
   equal(record.get('id'), 1234);
   equal(record.get('token'), 'd');
   equal(record.get('name'), 'Andrew');
-  equal(record.get('container'), container);
+  equal(Ember.getOwner(record), container);
 
   model.load({id: 1234, name: 'Peter'}, container);
 
   equal(record.get('id'), 1234);
   equal(record.get('token'), undefined);
   equal(record.get('name'), 'Peter');
-  equal(record.get('container'), container);
+  equal(Ember.getOwner(record), container);
 });
 
 test("store.find(type) returns a record with hasMany and belongsTo that should all have a container", function() {
@@ -113,11 +113,11 @@ test("store.find(type) returns a record with hasMany and belongsTo that should a
   var promise = Ember.run(store, store.find, 'test', 'a');
   promise.then(function(record) {
     start();
-    ok(record.get('container'));
-    ok(record.get('embeddedBelongsTo').get('container'));
+    ok(Ember.getOwner(record));
+    ok(Ember.getOwner(record.get('embeddedBelongsTo')));
 
     record.get('embeddedHasmany').forEach(function(embeddedBelongsToRecord) {
-      ok(embeddedBelongsToRecord.get('container'));
+      ok(Ember.getOwner(embeddedBelongsToRecord));
     });
   });
   stop();
@@ -130,7 +130,7 @@ test("store.find(type, id) returns a promise and loads a container for the recor
   promise.then(function(record) {
     start();
     ok(record.get('isLoaded'));
-    ok(record.get('container'));
+    ok(Ember.getOwner(record));
   });
   stop();
 });
@@ -144,7 +144,7 @@ test("store.find(type) returns a promise and loads a container for each record",
     equal(records.content.length, 2);
     records.forEach(function(record){
       ok(record.get('isLoaded'));
-      ok(record.get('container'));
+      ok(Ember.getOwner(record));
     });
   });
   stop();
@@ -159,7 +159,7 @@ test("store.find(type, Array) returns a promise and loads a container for each r
     equal(records.content.length, 2);
     records.forEach(function(record){
       ok(record.get('isLoaded'));
-      ok(record.get('container'));
+      ok(Ember.getOwner(record));
     });
   });
   stop();
