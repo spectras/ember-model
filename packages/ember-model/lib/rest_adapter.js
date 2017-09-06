@@ -128,32 +128,40 @@ Ember.RESTAdapter = Ember.Adapter.extend({
       settings = this.ajaxSettings(url, method);
     }
 
-    return new Ember.RSVP.Promise(function(resolve, reject) {
-      if (params) {
-        if (method === "GET") {
-          settings.data = params;
-        } else {
-          settings.contentType = "application/json; charset=utf-8";
-          settings.data = JSON.stringify(params);
-        }
-      }
+    var xhr = new XMLHttpRequest();
+    if (method === 'GET') {
+        var qs = this._encodeQueryParams(params || {});
+        xhr.open(settings.type, qs ? settings.url + '?' + qs : settings.url);
+    } else {
+        xhr.open(settings.type, settings.url);
+    }
+    xhr.responseType = settings.dataType || 'json';
 
-      settings.success = function(json) {
-        Ember.run(null, resolve, json);
-      };
+    Object.keys(settings.headers || {}).forEach(function (key) {
+        xhr.setRequestHeader(key, settings.headers[key]);
+    });
 
-      settings.error = function(jqXHR, textStatus, errorThrown) {
-        // https://github.com/ebryn/ember-model/issues/202
-        if (jqXHR && typeof jqXHR === 'object') {
-          jqXHR.then = null;
-        }
+    var promise = new Ember.RSVP.Promise(function (resolve, reject) {
+        xhr.addEventListener('load', function () { Ember.run(null, resolve, xhr.response); });
+        xhr.addEventListener('abort', function () { Ember.run(null, reject, xhr); });
+        xhr.addEventListener('error', function () { Ember.run(null, reject, xhr); });
+    });
 
-        Ember.run(null, reject, jqXHR);
-      };
+    if (method === 'GET') {
+        xhr.send();
+    } else {
+        xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+        xhr.send(JSON.stringify(params));
+    }
+    return promise;
+  },
 
-
-      Ember.$.ajax(settings);
-   });
+  _encodeQueryParams: function(obj) {
+    var str = [];
+    for(var key in obj) if (obj.hasOwnProperty(key)) {
+      str.push(encodeURIComponent(key) + "=" + encodeURIComponent(obj[key]));
+    }
+    return str.join("&");
   },
 
   _loadRecordFromData: function(record, data) {
